@@ -6,7 +6,7 @@ Function Get-EikonVersion{
     .DESCRIPTION
     Get-EikonVersion -ComputerName <Hostname> -Domain <domain> (default = POSHYT)
     .EXAMPLE
-    Get-EikonVersion SKPCXSGCB454S
+    Get-EikonVersion Computer01
     .Notes
     You may need to Edit the Path to the override config file depending where Eikon is installed on your environment (find $OverideConfigPath)
     #>
@@ -129,7 +129,7 @@ Function Get-EikonVersionListFromCSV{
     .DESCRIPTION
     Get-EikonVersionListFromCSV -Inputfile <Input file of hostnames> Default = "C:\temp\Posh_inputs\EikonHostnames.csv"
     -OutputFile <Name and loacation of output csv> Default = "C:\temp\Posh_outputs\EikonVersion_$(get-date -f yyyy-MM-dd-HH).csv",
-    -Domain <domain> (default = SANUK)
+    -Domain <domain> (default = POSHYT)
     .EXAMPLE
     Get-EikonVersionListFromCSV 
     .Notes
@@ -154,6 +154,7 @@ Function Get-EikonVersionListFromCSV{
         #pass Computername and Domain parameters to get-EikonVersion
         $Computer,$EikonVer,$EikonFileVer, $DACSID, $uptime = (Get-EikonVersion -ComputerName $ComputerName -Domain $Domain)
 
+        #create object with data passed from get-EikonVersion and pipe to csv file
         [pscustomobject][ordered] @{
             ComputerName =  $Computer
             "Eikon Version" = $EikonVer
