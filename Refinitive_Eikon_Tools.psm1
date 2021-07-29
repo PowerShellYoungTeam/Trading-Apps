@@ -17,7 +17,7 @@ Function Get-EikonVersion{
     )
 
     #Clear Variables encase function has been used before in session (never know!)   
-    $Computer = $EikonVer = $uptime = $AdCheck = $OverideConfigPath = $DACSData = $DACSID = $job = $null
+    $Computer = $EikonExePath = $EikonVer = $EikonFileVer = $uptime = $AdCheck = $OverideConfigPath = $DACSData = $DACSID = $job = $null
 
         # Get Computer info from AD
         try{
@@ -64,8 +64,8 @@ Function Get-EikonVersion{
 
             #Get DACS ID from OverrideConfiguration.XML
             Try{
-                $OverideConfigPath = (Get-ChildItem -path "\\$($Computer)\c$\Program Files (x86)\Thomson Reuters\Eikon\" -Directory -erroraction silentlycontinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1) 
-                $OverideConfigPath = "$($OverideConfigPath.FullName)\Config\OverrideConfiguration.xml"
+                $EikonPath = (Get-ChildItem -path "\\$($Computer)\c$\Program Files (x86)\Thomson Reuters\Eikon\" -Directory -erroraction silentlycontinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1) 
+                $OverideConfigPath = "$($EikonPath.FullName)\Config\OverrideConfiguration.xml"
                 [XML]$DACSData = Get-Content $OverideConfigPath -erroraction silentlycontinue
                 $DACSID = $DACSData.Setting.ChildNodes | Where-Object -Property Name -EQ "COMMON.PIXL.CUSTOMERMANAGED.DEFAULT.AUTHENTICATION.STANDARD.USERNAME"
                 $DACSID = $DACSID.'#text'
@@ -88,11 +88,22 @@ Function Get-EikonVersion{
                 $uptime = $_.Exception.Message
             }#End of Try..Catch for uptime
 
+            #Get Eikon.exe file version
+            Try{
+                $EikonExePath = "$($EikonPath.FullName)\bin\Eikon.exe" 
+                $EikonFileVer = (Get-ChildItem $EikonExePath -erroraction SilentlyContinue).VersionInfo.FileVersion 
+            }catch{ #Store error message if there was a issue
+                $EikonFileVer = $_.Exception.Message
+            }
+
+            if($null -eq $EikonFileVer){
+            $EikonFileVer = "Can't Find Eikon.exe"}
+            
             #output info to console
-            Write-host "$Computer, $EikonVer, $DACSID, $uptime"
+            Write-host "$Computer, $EikonVer,$EikonFileVer, $DACSID, $uptime"
 
             #Return Info
-            return $Computer, $EikonVer, $DACSID, $uptime
+            return $Computer, $EikonVer,$EikonFileVer, $DACSID, $uptime
 
         }else{#If machine wasn't online 
             
@@ -100,11 +111,12 @@ Function Get-EikonVersion{
             Write-host -ForegroundColor Red "$($ComputerName) is offline"
 
             $EikonVer = "Offline"
+            $EikonFileVer = "Offline"
             $DACSID = "Offline"
             $uptime = "Offline"
 
             #Return Info
-            return $Computer, $EikonVer, $DACSID, $uptime
+            return $Computer, $EikonVer,$EikonFileVer, $DACSID, $uptime
 
         }# End of If
 }# end of Function
@@ -134,17 +146,18 @@ Function Get-EikonVersionListFromCSV{
     Import-CSV $Inputfile -Header ComputerName | Foreach-Object{
 
         #Clear Variables at start of loop
-        $ComputerName = $Computer = $EikonVer = $DACSID = $uptime = $null
+        $ComputerName = $Computer = $EikonVer = $EikonFileVer = $DACSID = $uptime = $null
 
         #Load latest ComputerName from CSV into Variable
         $ComputerName = $_.ComputerName
 
         #pass Computername and Domain parameters to get-EikonVersion
-        $Computer,$EikonVer, $DACSID, $uptime = (Get-EikonVersion -ComputerName $ComputerName -Domain $Domain)
+        $Computer,$EikonVer,$EikonFileVer, $DACSID, $uptime = (Get-EikonVersion -ComputerName $ComputerName -Domain $Domain)
 
         [pscustomobject][ordered] @{
             ComputerName =  $Computer
             "Eikon Version" = $EikonVer
+            "Eikon.exe Version" = $EikonFileVer
             "DACS ID" = $DACSID
             "uptime (days)" = $uptime
         }  | Export-Csv $OutputFile -Append -NoTypeInformation
