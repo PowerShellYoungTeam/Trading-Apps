@@ -154,6 +154,7 @@ Function Get-EikonVersionListFromCSV{
         #pass Computername and Domain parameters to get-EikonVersion
         $Computer,$EikonVer,$EikonFileVer, $DACSID, $uptime = (Get-EikonVersion -ComputerName $ComputerName -Domain $Domain)
 
+        #create object with data passed from get-EikonVersion and pipe to csv file
         [pscustomobject][ordered] @{
             ComputerName =  $Computer
             "Eikon Version" = $EikonVer
