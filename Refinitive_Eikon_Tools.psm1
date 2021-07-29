@@ -110,6 +110,7 @@ Function Get-EikonVersion{
             #Output machine is online to the console
             Write-host -ForegroundColor Red "$($ComputerName) is offline"
 
+            #Set Variables to "offline"
             $EikonVer = "Offline"
             $EikonFileVer = "Offline"
             $DACSID = "Offline"
