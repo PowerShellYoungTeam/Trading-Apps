@@ -14,7 +14,7 @@ function Get-BloombergRelease{
     Param
     (
         [Parameter(ValueFromPipeline=$true,Position=0)]
-        $URL = https://www.bloomberg.com/professional/support/software-updates/
+        $URL = 'https://www.bloomberg.com/professional/support/software-updates/'
     )
  
     Begin {
