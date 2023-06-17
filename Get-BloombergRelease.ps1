@@ -1,5 +1,15 @@
-function Get-BloombergRelease
-{
+function Get-BloombergRelease{
+    <#
+    .SYNOPSIS
+    Function to check for new releases of Bloomberg Terminal
+    by Steven Wight
+    .DESCRIPTION
+    Get-BloombergRelease <URL> (default https://www.bloomberg.com/professional/support/software-updates/)
+    .EXAMPLE
+    Get-BloombergRelease
+    .Notes
+    You can change and even pipe the URL, but unless Bloomberg change the URL, it's pretty pointless to be fair, more of a personal exercise me doing it.
+    #>
     [CmdletBinding()]
     Param
     (
